@@ -8,6 +8,7 @@ import (
 	"github.com/mediocregopher/radix.v2/redis"
 )
 
+// MClient implements the manatcp Client interface
 type MClient struct {
 	// This will be initialized with a buffer of 1. When writing a command this
 	// will have a number written to it containing the number of messages which
@@ -25,6 +26,7 @@ func (mc MClient) getReadCount() int {
 	}
 }
 
+// Read implements the Read method for the manatcp Client interface
 func (mc MClient) Read(r *bufio.Reader) (interface{}, error, bool) {
 
 	rr := redis.NewRespReader(r)
@@ -51,7 +53,8 @@ func (mc MClient) Read(r *bufio.Reader) (interface{}, error, bool) {
 	return m, nil, false
 }
 
-func (_ MClient) IsPush(i interface{}) bool {
+// IsPush implements the IsPush method for the manatcp Client interface
+func (mc MClient) IsPush(i interface{}) bool {
 	arr, err := i.(*redis.Resp).Array()
 	if err != nil {
 		return false
@@ -66,7 +69,8 @@ func (_ MClient) IsPush(i interface{}) bool {
 	return m == "message"
 }
 
-func (_ MClient) Write(w *bufio.Writer, i interface{}) (error, bool) {
+// Write implements the Write method for the manatcp Client interface
+func (mc MClient) Write(w *bufio.Writer, i interface{}) (error, bool) {
 	if _, err := redis.NewResp(i).WriteTo(w); err != nil {
 		return err, true
 	}

@@ -1,6 +1,6 @@
-// A package to supplement the pubsub package found in the radix suite. This one
-// has the ability to receive incomming publishes over a channel. This channel
-// will be close()'d when the connection is closed.
+// Package pubsubch supplements the pubsub package found in the radix suite.
+// This one has the ability to receive incomming publishes over a channel. This
+// channel will be close()'d when the connection is closed.
 //
 // The methods on the PubSubCh object should only ever be used syncronously.
 // However, the PublishCh, where publishes are pushed to, *should* be read from
@@ -18,14 +18,16 @@ import (
 	"github.com/mediocregopher/radix.v2/redis"
 )
 
+// Publish is sent back over the PublishCh and represents a single publish the
+// connection has seen
 type Publish struct {
 	Message string
 	Channel string
 }
 
-// Container for the channeled pubsub connection. All methods should be called
-// syncronously, however the PublishCh can (and should) be read from
-// asyncronously.
+// PubSubCh is a container for the channeled pubsub connection. All methods
+// should be called syncronously, however the PublishCh can (and should) be read
+// from asyncronously.
 type PubSubCh struct {
 	i    *inner.MClient
 	conn *manatcp.Conn
@@ -38,10 +40,11 @@ type PubSubCh struct {
 	PublishCh chan *Publish
 }
 
+// DefaultTimeout is the default read/write timeout used on the tcp socket
 const DefaultTimeout = 30 * time.Second
 
-// Creates a new PubSubCh with the given timeout. That timeout will be used when
-// reading and writing to the underlying connection
+// DialTimeout creates a new PubSubCh with the given timeout. That timeout will
+// be used when reading and writing to the underlying connection
 func DialTimeout(addr string, timeout time.Duration) (*PubSubCh, error) {
 	mc := inner.MClient{
 		ReadCountCh: make(chan int, 1),
@@ -76,7 +79,7 @@ func DialTimeout(addr string, timeout time.Duration) (*PubSubCh, error) {
 	}, nil
 }
 
-// Like DialTimeout, but using the DefaultTimeout
+// Dial is like DialTimeout, but it uses the DefaultTimeout
 func Dial(addr string) (*PubSubCh, error) {
 	return DialTimeout(addr, DefaultTimeout)
 }
@@ -100,26 +103,36 @@ func (p *PubSubCh) subUnsubGen(cmd string, args ...string) (int64, error) {
 	return arr[2].Int64()
 }
 
+// Subscribe subscribes this connection to the given set of channels
 func (p *PubSubCh) Subscribe(channel ...string) (int64, error) {
 	return p.subUnsubGen("SUBSCRIBE", channel...)
 }
 
+// Unsubscribe unsubscribes this connection from the given channels
+//
 // You *must* provide at least one channel here, the empty argument form of the
 // command does not work with this package
 func (p *PubSubCh) Unsubscribe(channel ...string) (int64, error) {
 	return p.subUnsubGen("UNSUBSCRIBE", channel...)
 }
 
+// PSubscribe is like Subscribe but it takes in a set of patterns instead of
+// channel names
 func (p *PubSubCh) PSubscribe(pattern ...string) (int64, error) {
 	return p.subUnsubGen("PSUBSCRIBE", pattern...)
 }
 
+// PUnsubscribe is like Unsubscribe but it takes in a set of patterns instead of
+// channel names
+//
 // You *must* provide at least one pattern here, the empty argument form of the
 // command does not work with this package
 func (p *PubSubCh) PUnsubscribe(pattern ...string) (int64, error) {
 	return p.subUnsubGen("PUNSUBSCRIBE", pattern...)
 }
 
+// Close closes the connection. No methods should be called after this is
+// called. This will cause the PublishCh to close
 func (p *PubSubCh) Close() error {
 	return p.conn.Close()
 }
