@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/fzzy/radix/redis"
 	"log"
 	"time"
 
 	"github.com/mediocregopher/pubsubch"
+	"github.com/mediocregopher/radix.v2/redis"
 )
 
 var channels = []string{"foo", "bar", "baz", "buz"}

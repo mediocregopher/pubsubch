@@ -11,11 +11,11 @@ package pubsubch
 
 import (
 	"fmt"
-	"github.com/fzzy/radix/redis/resp"
-	"github.com/mediocregopher/manatcp"
 	"time"
 
+	"github.com/mediocregopher/manatcp"
 	"github.com/mediocregopher/pubsubch/inner"
+	"github.com/mediocregopher/radix.v2/redis"
 )
 
 type Publish struct {
@@ -55,7 +55,7 @@ func DialTimeout(addr string, timeout time.Duration) (*PubSubCh, error) {
 	go func() {
 		for m := range conn.PushCh {
 			// IsPush already determined it's an array of at least size 3
-			arr, _ := m.(*resp.Message).Array()
+			arr, _ := m.(*redis.Resp).Array()
 			ch, err := arr[1].Str()
 			if err != nil {
 				continue
@@ -90,14 +90,14 @@ func (p *PubSubCh) subUnsubGen(cmd string, args ...string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	arr, err := r.(*resp.Message).Array()
+	arr, err := r.(*redis.Resp).Array()
 	if err != nil {
 		return 0, err
 	}
 	if len(arr) < 3 {
 		return 0, fmt.Errorf("Unknown return: %#v", arr)
 	}
-	return arr[2].Int()
+	return arr[2].Int64()
 }
 
 func (p *PubSubCh) Subscribe(channel ...string) (int64, error) {

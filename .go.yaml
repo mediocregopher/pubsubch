@@ -1,5 +1,5 @@
 ---
 path: github.com/mediocregopher/pubsubch
 deps:
-    - loc: github.com/fzzy/radix
+    - loc: github.com/mediocregopher/radix.v2
     - loc: github.com/mediocregopher/manatcp
