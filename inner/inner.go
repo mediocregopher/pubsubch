@@ -66,7 +66,7 @@ func (mc MClient) IsPush(i interface{}) bool {
 	if err != nil {
 		return false
 	}
-	return m == "message"
+	return m == "message" || m == "pmessage"
 }
 
 // Write implements the Write method for the manatcp Client interface

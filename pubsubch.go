@@ -59,11 +59,20 @@ func DialTimeout(addr string, timeout time.Duration) (*PubSubCh, error) {
 		for m := range conn.PushCh {
 			// IsPush already determined it's an array of at least size 3
 			arr, _ := m.(*redis.Resp).Array()
-			ch, err := arr[1].Str()
+
+			chI, msgI := 1, 2
+			if header, err := arr[0].Str(); err != nil {
+				continue
+			} else if header == "pmessage" {
+				chI++
+				msgI++
+			}
+
+			ch, err := arr[chI].Str()
 			if err != nil {
 				continue
 			}
-			msg, err := arr[2].Str()
+			msg, err := arr[msgI].Str()
 			if err != nil {
 				continue
 			}
