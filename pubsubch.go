@@ -140,6 +140,16 @@ func (p *PubSubCh) PUnsubscribe(pattern ...string) (int64, error) {
 	return p.subUnsubGen("PUNSUBSCRIBE", pattern...)
 }
 
+// Ping calls the PING command on the connection. This will only return an error
+// if the connection has been closed
+func (p *PubSubCh) Ping() error {
+	_, err, closed := p.conn.Cmd([]string{"PING"})
+	if err != nil && closed {
+		return err
+	}
+	return nil
+}
+
 // Close closes the connection. No methods should be called after this is
 // called. This will cause the PublishCh to close
 func (p *PubSubCh) Close() error {

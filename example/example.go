@@ -21,6 +21,10 @@ func main() {
 	go func() {
 		for pub := range subConn.PublishCh {
 			log.Printf("Got publish '%s' from '%s'", pub.Message, pub.Channel)
+			log.Printf("Pinging")
+			if err := subConn.Ping(); err != nil {
+				log.Fatalf("pinging: %s", err)
+			}
 		}
 		log.Println("Subscription connection closed")
 	}()
